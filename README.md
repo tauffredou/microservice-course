@@ -5,7 +5,7 @@ facilities list in Paris deployed with `docker` and `docker-compose`.
 
 ## Step 1
 
-Create a Dockerfile to build a simple server with one endpoint `/search` returning
+Create a Dockerfile to build a simple server with one endpoint `/search?q=Mouchotte` returning
 a JSON representation of one sport facility.
 
 ```
