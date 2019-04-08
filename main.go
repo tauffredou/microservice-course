@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/olivere/elastic"
 )
@@ -49,6 +51,17 @@ const mapping = `
 		}
 	}
 }`
+
+type Facility struct {
+	Type              string `json:"type"`
+	Nature            string `json:"nature"`
+	City              string `json:"city"`
+	CommissioningYear string `json:"commissioning_year"`
+	Name              string `json:"name"`
+	Address           string `json:"address"`
+	NbFacilities      int    `json:"nb_facilities"`
+	FacilityId        int    `json:"facility_id"`
+}
 
 func main() {
 	// Starting with elastic.v5, you must pass a context to execute each service
@@ -97,6 +110,29 @@ func main() {
 		}
 	}
 
+	f, err := os.Open("facilities.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sc := bufio.NewScanner(f)
+	i := 0
+	for sc.Scan() {
+		_, err := client.Index().
+			Index("facilities").
+			Type("facility").
+			Id(string(i)).
+			BodyString(sc.Text()).
+			Do(ctx)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		i = i + 1
+	}
+
+	fmt.Print("starting server :8080")
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()["q"]
 		mq := elastic.NewMatchQuery("name", q[0])
@@ -110,7 +146,7 @@ func main() {
 			return
 		}
 
-		fmt.Fprint(w, "%q", searchResults.Hits)
+		fmt.Fprint(w, "%s", searchResults.Hits)
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
