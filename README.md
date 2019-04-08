@@ -41,4 +41,6 @@ Useful documentation:
 ## Step 3
 
 Use `main.go` file to launch an implemented version of the server.
-Add your server in your `docker-compose` file.
+Add this server to your `docker-compose` file.
+Fix the last line of the HTTP handler to loop over all search results and print them
+to the `ResponseWriter`.

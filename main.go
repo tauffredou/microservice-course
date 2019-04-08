@@ -150,6 +150,7 @@ func main() {
 			return
 		}
 
+		// TODO: you'll need to loop over hits to return the right result
 		fmt.Fprint(w, "%s", searchResults.Hits)
 	})
 
