@@ -115,21 +115,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sc := bufio.NewScanner(f)
-	i := 0
-	for sc.Scan() {
-		_, err := client.Index().
-			Index("facilities").
-			Type("facility").
-			Id(string(i)).
-			BodyString(sc.Text()).
-			Do(ctx)
+	maq := elastic.NewMatchAllQuery()
+	searchResults, err := client.Search().Index("facilities").Query(maq).Do(ctx)
+	if searchResults.Hits.TotalHits > 1 {
+		sc := bufio.NewScanner(f)
+		i := 0
+		for sc.Scan() {
+			_, err := client.Index().
+				Index("facilities").
+				Type("facility").
+				Id(string(i)).
+				BodyString(sc.Text()).
+				Do(ctx)
 
-		if err != nil {
-			log.Fatal(err)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			i = i + 1
 		}
-
-		i = i + 1
 	}
 
 	fmt.Print("starting server :8080")
