@@ -5,42 +5,43 @@ facilities list in Paris deployed with `docker` and `docker-compose`.
 
 ## Step 1
 
-Create a Dockerfile to build a simple server with one endpoint `/search?q=Mouchotte` returning
-a JSON representation of one sport facility.
+Create a Dockerfile to deploy the Golang application in `main.go`. It is recommended to use the official `golang:1.12` image.
 
+When you start the application with the following command:
 ```
-{
-  "type": "Salle multisports",
-  "nature": "Intérieur",
-  "city": "Paris",
-  "commissioning_year": "1985-1994",
-  "name": "Centre Sportif Du Commandant Mouchotte",
-  "address": "Rue Du Commandant Mouchotte",
-  "nb_facilities": 3,
-  "facility_id": 141190,
-  "zip_code": 75014
-}
+docker run -it --rm <your image name>
 ```
+
+The application should panic with the following error:
+```
+panic: health check timeout: Head http://127.0.0.1:9200: dial tcp 127.0.0.1:9200: connect: connection refused: no Elasticsearch node available
+
+goroutine 1 [running]:
+main.main()
+	/usr/src/main.go:76 +0xdc2
+```
+
+At this point, try to identify why the application is returning an error and what should we do avoid it.
 
 Useful documentation:
-[Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
+ - [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 ## Step 2
 
-Use `docker-compose` to run an Elasticsearch cluster locally and upload data from
-`facilities.json` file in to Elasticsearch.
+Use `docker-compose` to run an Elasticsearch cluster besides the application.
 
+**NOTE**: the Elasticsearch cluster can't start without the env var `dicovery.type=single-node`.
+
+At this point, the application should start and load data into the Elasticsearch cluster if necessary. You can reset the Elasticsearch index with the following command:
 ```
-curl -XPOST -H "Content-Type: application/x-ndjson" "http://localhost:9200/facilities/default?pretty" -d "@facilities.json"
+curl -XDELETE http://<hostname of the elasticsearch container>:9200/_all
+```
+
+After starting (it could take multiple seconds the first time), the service should be available and you can test it with the following command:
+```
+curl http://<hostname of the application container>:<port exposed>/search?q=Paris
 ```
 
 Useful documentation:
-[Compose reference](https://docs.docker.com/compose/compose-file/)
-[Elasticsearch documentation on Docker](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html)
-
-## Step 3
-
-Use `main.go` file to launch an implemented version of the server.
-Add this server to your `docker-compose` file.
-Fix the last line of the HTTP handler to loop over all search results and print them
-to the `ResponseWriter`.
+ - [Compose reference](https://docs.docker.com/compose/compose-file/)
+ - [Elasticsearch documentation on Docker](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html)
