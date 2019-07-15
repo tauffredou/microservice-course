@@ -45,3 +45,6 @@ curl http://<hostname of the application container>:<port exposed>/search?q=Pari
 Useful documentation:
  - [Compose reference](https://docs.docker.com/compose/compose-file/)
  - [Elasticsearch documentation on Docker](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html)
+
+Petclinic features
+https://docs.google.com/document/d/1V28rAQzsKc9_5XF5kljyKiOLF0OjbbeBwZY3qXyIwNw
